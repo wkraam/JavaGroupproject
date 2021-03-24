@@ -18,7 +18,7 @@ public class Mängija{
         Scanner sc = new Scanner(System.in);
         int tikud;
         while(true) {
-            System.out.println(nimi + " - Mitu tikku võtad(1/2/3): ");
+            System.out.print(nimi + " - Mitu tikku võtad(1/2/3): ");
             tikud = sc.nextInt();
             if (tikud > tikkudeArv) {
                 System.out.println("Alles pole piisavalt tikke. Vali uuesti.");

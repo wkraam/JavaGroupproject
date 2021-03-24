@@ -2,7 +2,7 @@ import java.util.Scanner;
 
 public class Tikumäng {
     //Küsima mitu mängijat (1 vs comp) vs (1 vs 1)
-    /////kui arvutiga, siis kas kerge(genereerib arvu suvaliselt) või raske
+    //kui arvutiga, siis kas kerge(genereerib arvu suvaliselt) või raske
     //Mängijale/mängijatele nimed
     //Random tikkude arv
     //Random kes alustab
@@ -17,18 +17,22 @@ public class Tikumäng {
     }
 
     public static void main(String[] args) {
+        System.out.println("Tikkude võtmise mäng, kus laual on tikud ja te peate valima 1-3 tikku.");
+        System.out.println("Kaotaja on see, kes valib viimasena tikud.");
+        System.out.println();
         Scanner sc = new Scanner(System.in);
-        Mängija mangija1 = new Mängija("");
-        Mängija mangija2 = new Mängija("");
+        Mängija mangija1;
+        Mängija mangija2;
         while (true) {
-            System.out.println("Mitu mängijat(1/2): ");
+            System.out.println("1 - mängite arvuti vastu, 2 - mängite teise mängija vastu");
+            System.out.print("Mitu mängijat(1/2): ");
             int mangijaid = sc.nextInt();
             if (mangijaid == 1) {
-                System.out.println("Mängija nimi: ");
+                System.out.print("Mängija nimi: ");
                 String mangija = sc.next();
                 mangija1 = new Mängija(mangija);
                 while (true) {
-                    System.out.println("Vali vastane(kerge/raske): ");
+                    System.out.print("Vali vastane(kerge/raske): ");
                     String vastane = sc.next();
                     if (vastane.equals("kerge")) {
                         mangija2 = new MängijaComputer();
@@ -45,10 +49,10 @@ public class Tikumäng {
                 break;
             } //1 mängija vs arvuti
             else if (mangijaid == 2) {
-                System.out.println("1. mängija nimi: ");
+                System.out.print("1. mängija nimi: ");
                 String mangija = sc.next();
                 mangija1 = new Mängija(mangija);
-                System.out.println("2. mängija nimi: ");
+                System.out.print("2. mängija nimi: ");
                 mangija = sc.next();
                 mangija2 = new Mängija(mangija);
                 break;
