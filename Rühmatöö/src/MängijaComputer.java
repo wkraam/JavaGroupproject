@@ -1,4 +1,6 @@
-public class MängijaComputer extends Mängija{
+import javax.swing.*;
+
+public class MängijaComputer extends Mängija {
     public MängijaComputer() {
     }
 
@@ -10,12 +12,13 @@ public class MängijaComputer extends Mängija{
     @Override
     public int käik(int tikkudeArv) {
         int tikud;
-        while(true){
+        while (true) {
             //(int) ((Math.random() * (max - min)) + min);
             tikud = (int) ((Math.random() * (4 - 1)) + 1);
-            if(tikud<=tikkudeArv && tikud <= 3) break;
+            if (tikud <= tikkudeArv && tikud <= 3) break;
         } //genereerib arvu 1 ja 3 vahel
         System.out.println("Arvuti võttis " + tikud + " tikku");
+        JOptionPane.showMessageDialog(null, "Arvuti võttis " + tikud + " tikku");
         return tikud;
     }
 }
