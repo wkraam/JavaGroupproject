@@ -16,9 +16,8 @@ public class MängijaComputer extends Mängija {
             //(int) ((Math.random() * (max - min)) + min);
             tikud = (int) ((Math.random() * (4 - 1)) + 1);
             if (tikud <= tikkudeArv && tikud <= 3) break;
-        } //genereerib arvu 1 ja 3 vahel
-        System.out.println("Arvuti võttis " + tikud + " tikku");
+        }
         JOptionPane.showMessageDialog(null, "Arvuti võttis " + tikud + " tikku");
         return tikud;
-    }
+    }//genereerib suvaliselt arvu 1-3 vahel
 }
