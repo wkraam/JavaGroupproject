@@ -2,5 +2,5 @@
  java group project "tikumäng"
  
 Authors:
- #Triin Schaffrik/n
- #Walther Kraam
+ Triin Schaffrik
+ Walther Kraam
