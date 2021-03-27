@@ -1,5 +1,6 @@
 # JavaGroupproject
  java group project "tikumäng"
  
- Triin Schaffrik
+Authors:/n
+ Triin Schaffrik/n
  Walther Kraam
