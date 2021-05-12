@@ -4,6 +4,7 @@ import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -44,28 +45,38 @@ public class MainMenu extends Application {
     Button bttnLõpeta;
     Button bttnAlustaRaske;
     Button bttnAlustaTeiseVastu;
-    Button bttnvaliTikud;
+    Button bttnValiTikud;
 
     Mängija mangija1;
     Mängija mangija2;
+    Mängija current_player;
 
     // nupp, mis viib tagasi menüü screenile
     Button bttnBack;
 
+    int tikkude_arv;
+
+    public void setTikkude_arv(int uusArv){
+        tikkude_arv = uusArv;
+
+    }
+    
     public void game(Mängija m1, Mängija m2){
-        AtomicReference<Mängija> current_player = null;
-        int tikkude_arv = 5 + (int) (Math.random() * 20); // suvaline tikkude arv
+
+        tikkude_arv = 5 + (int) (Math.random() * 20);
+
         allesTikke.setText(String.valueOf(tikkude_arv));
+        System.out.println(tikkude_arv);
         int a = (int) (Math.random() * 1000);//suvaline arv, et vaadata kumb alustab
 
         if (a % 2 == 0) {
 
             mängija.setText(m1.getNimi());//GUI osa, mis väljastab, et esimene mängija alustab
-            current_player.set(m1);
+            current_player = m1;
         } else {
 
             mängija.setText(m2.getNimi());//GUI osa, mis väljastab, et teine mängija alustab
-            current_player.set(m2);
+            current_player = m2;
             tikkude_arv = käigud(tikkude_arv, m2, m1);
         }
 
@@ -73,26 +84,30 @@ public class MainMenu extends Application {
         while (tikkude_arv > 0) { // while loop, mis töötab, kuni tikkude arv on üle nulli
 
             // esimese mängija käik
-            if (current_player.get() == m1){
-                bttnvaliTikud.setOnAction((ActionEvent e) -> {
-                    System.out.println("Valik");
-                    current_player.set(m2);
-                    //if (tikkude_arv > 0) tikkude_arv = käigud(tikkude_arv, m1, m2);
-                    //break;
+            if (current_player == m1){
+                mängija.setText(m1.getNimi());
+                bttnValiTikud.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent event) {
+                        System.out.println("Valik");
+                        setTikkude_arv(käigud(tikkude_arv, m1, m2));
+                    }
                 });
             }
 
             // teise mängija käik
             // kui on mängijaks computer
-            if (m2 instanceof MängijaComputer) {
+            if (m2 instanceof MängijaComputer && current_player == m2) {
+                mängija.setText(m2.getNimi());
                 if (tikkude_arv > 0) tikkude_arv = käigud(tikkude_arv, m2, m1);
-                current_player.set(m1);
+                current_player = m1;
             }
             // kui mängijaks on player
-            else if (current_player.get() ==m2){
+            else if (current_player == m2){
+                mängija.setText(m2.getNimi());
                 if (tikkude_arv > 0){
                     tikkude_arv = käigud(tikkude_arv, m2, m1);
-                    current_player.set(m1);
+                    current_player = m1;
                 }
             }
 
@@ -100,14 +115,15 @@ public class MainMenu extends Application {
     }
 
     public int käigud(int tikkude_arv, Mängija m1, Mängija m2) {  // meetod, kus tehakse mängija käik
-        tikkude_arv -= m1.käik(tikkude_arv);//kutsub välja Mängija klassis oleva funktsiooni käik ning lahutab vastava tikkude arvu kogu tikkude hulgast.
-        allesTikke.setText(String.valueOf(tikkude_arv)); //GUI osa, kus väljastatakse kasutajale, palju on tikke alles
+        tikkude_arv -= m1.käik(tikkude_arv); // kutsub välja vastava Mängija klassis oleva funktsiooni käik ning lahutab vastava tikkude arvu kogu tikkude hulgast.
+        allesTikke.setText(String.valueOf(tikkude_arv)); // GUI osa, kus väljastatakse kasutajale, palju on tikke alles
+
         if (tikkude_arv == 0) {
             tikkudeArvComboBox.setDisable(true);
-            bttnvaliTikud.setDisable(true);
+            bttnValiTikud.setDisable(true);
             allesTikke.setText("");
             allesTikkelbl.setText("Võitja: ");
-            võitja.setText(m2.getNimi());//GUI osa, kus näidatakse, et m2 võitis
+            võitja.setText(m2.getNimi()); // GUI osa, kus näidatakse, et m2 võitis
         }//väljastab võitja
         return tikkude_arv;
     }
@@ -233,14 +249,14 @@ public class MainMenu extends Application {
                 System.exit(0);
             });
 
-            bttnvaliTikud = new Button("vali");
-            bttnvaliTikud.prefWidth(50);
+            bttnValiTikud = new Button("vali");
+            bttnValiTikud.prefWidth(50);
         }
 
         //game stuff
         käiguNäitaja.getChildren().addAll(alustab, mängija);
         tikkudeNäitja.getChildren().addAll(allesTikkelbl, allesTikke, võitja);
-        tikkudeValik.getChildren().addAll(tikkudeArvComboBox, bttnvaliTikud, tikkudeError);
+        tikkudeValik.getChildren().addAll(tikkudeArvComboBox, bttnValiTikud, tikkudeError);
         gameLabels.getChildren().addAll(käiguNäitaja, tikkudeNäitja, tikkudeValik);
         mängGroup.getChildren().addAll(gameLabels, bttnBack);
 
