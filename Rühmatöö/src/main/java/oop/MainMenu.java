@@ -4,6 +4,7 @@ import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -55,64 +56,59 @@ public class MainMenu extends Application {
     Button bttnBack;
 
     int tikkude_arv;
+    int valitudTikud;
 
     public void setTikkude_arv(int uusArv){
         tikkude_arv = uusArv;
 
     }
-    
-    public void game(Mängija m1, Mängija m2){
+
+    public void algus(){
 
         tikkude_arv = 5 + (int) (Math.random() * 20);
-
         allesTikke.setText(String.valueOf(tikkude_arv));
         System.out.println(tikkude_arv);
-        int a = (int) (Math.random() * 1000);//suvaline arv, et vaadata kumb alustab
 
+        int a = (int) (Math.random() * 1000);//suvaline arv, et vaadata kumb alustab
         if (a % 2 == 0) {
 
-            mängija.setText(m1.getNimi());//GUI osa, mis väljastab, et esimene mängija alustab
-            current_player = m1;
+            mängija.setText(mangija1.getNimi());//GUI osa, mis väljastab, et esimene mängija alustab
+            current_player = mangija1;
         } else {
 
-            mängija.setText(m2.getNimi());//GUI osa, mis väljastab, et teine mängija alustab
-            current_player = m2;
-            tikkude_arv = käigud(tikkude_arv, m2, m1);
+            mängija.setText(mangija2.getNimi());//GUI osa, mis väljastab, et teine mängija alustab
+            current_player = mangija2;
+            tikkude_arv = käigud(tikkude_arv, mangija2, mangija1);
+        }
+    }
+
+    public int game() throws InterruptedException {
+        // esimese mängija käik
+        if (current_player == mangija1){
+            mängija.setText(mangija1.getNimi());
+            wait(10);
         }
 
-        System.out.println(tikkude_arv);
-        while (tikkude_arv > 0) { // while loop, mis töötab, kuni tikkude arv on üle nulli
-
-            // esimese mängija käik
-            if (current_player == m1){
-                mängija.setText(m1.getNimi());
-                bttnValiTikud.setOnAction(new EventHandler<ActionEvent>() {
-                    @Override
-                    public void handle(ActionEvent event) {
-                        System.out.println("Valik");
-                        setTikkude_arv(käigud(tikkude_arv, m1, m2));
-                    }
-                });
+        // teise mängija käik
+        // kui on mängijaks computer
+        if (mangija2 instanceof MängijaComputer && current_player == mangija2) {
+            mängija.setText(mangija2.getNimi());
+            wait(10);
+            if (tikkude_arv > 0) tikkude_arv = käigud(tikkude_arv, mangija2, mangija1);
+            current_player = mangija1;
+        }
+        // kui mängijaks on player
+        else if (current_player == mangija2){
+            mängija.setText(mangija2.getNimi());
+            wait(10);
+            if (tikkude_arv > 0){
+                tikkude_arv = käigud(tikkude_arv, mangija2, mangija1);
+                current_player = mangija1;
             }
+        }
+    return tikkude_arv;
+    }//käigud, kuni kumbki võidab
 
-            // teise mängija käik
-            // kui on mängijaks computer
-            if (m2 instanceof MängijaComputer && current_player == m2) {
-                mängija.setText(m2.getNimi());
-                if (tikkude_arv > 0) tikkude_arv = käigud(tikkude_arv, m2, m1);
-                current_player = m1;
-            }
-            // kui mängijaks on player
-            else if (current_player == m2){
-                mängija.setText(m2.getNimi());
-                if (tikkude_arv > 0){
-                    tikkude_arv = käigud(tikkude_arv, m2, m1);
-                    current_player = m1;
-                }
-            }
-
-        }//käigud, kuni kumbki võidab
-    }
 
     public int käigud(int tikkude_arv, Mängija m1, Mängija m2) {  // meetod, kus tehakse mängija käik
         tikkude_arv -= m1.käik(tikkude_arv); // kutsub välja vastava Mängija klassis oleva funktsiooni käik ning lahutab vastava tikkude arvu kogu tikkude hulgast.
@@ -200,6 +196,12 @@ public class MainMenu extends Application {
                             "3 tikku"
                     );
             tikkudeArvComboBox = new ComboBox(options);
+            tikkudeArvComboBox.setOnAction((Event e) ->{
+                String valik = tikkudeArvComboBox.getValue()+"";
+                if (valik.equals("1 tikk")) valitudTikud = 1;
+                if (valik.equals("2 tikku")) valitudTikud = 2;
+                if (valik.equals("3 tikku")) valitudTikud = 3;
+            });
         }
         /** Buttons **/
         {
@@ -211,7 +213,7 @@ public class MainMenu extends Application {
                 mangija1 = new Mängija(nimiTF.getText());
                 mangija2 = new MängijaComputer();
                 primaryStage.setScene(mäng);
-                game(mangija1, mangija2);
+                algus(); // otsustatakse, kes alustab
             });
 
             //Alusta raske arvuti vastu
@@ -251,6 +253,14 @@ public class MainMenu extends Application {
 
             bttnValiTikud = new Button("vali");
             bttnValiTikud.prefWidth(50);
+            bttnValiTikud.setOnAction(new EventHandler<ActionEvent>() {
+                //valitudTikud = tikkudeArvComboBox.getValue()+"";
+                @Override
+                public void handle(ActionEvent event) {
+                    System.out.println("Valik"+valitudTikud);
+                    setTikkude_arv(käigud(tikkude_arv, mangija1, mangija2));
+                }
+            });
         }
 
         //game stuff
