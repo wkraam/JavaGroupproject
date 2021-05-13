@@ -18,10 +18,9 @@ import javafx.util.Duration;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
-public class MainMenu extends Application {
+public class MainMenu extends Application{
     //menu stseeni nupud
     HBox tikkudeNäitja = new HBox();
-    HBox tikkudeValik;
 
     Label sissejuhatus;
     Label nimiLabel;
@@ -54,13 +53,12 @@ public class MainMenu extends Application {
     int tikkude_arv = 0;
 
     boolean inimene;
-    boolean tarkarvuti;
+    boolean käik;
 
     Font font = new Font("Bauhaus 93", 15);
 
     public Mängija algus(){
         tikkude_arv = 5 + (int) (Math.random() * 20);// tikkude arv, genereeritakse suvaliselt vahemikust 5-25
-        System.out.println(tikkude_arv);
 
         int a = (int) (Math.random() * 1000);//suvaline arv, et vaadata kumb alustab
         if (a % 2 == 0) {
@@ -72,36 +70,41 @@ public class MainMenu extends Application {
         }
     }
 
-    public Mängija käigud(Mängija m1, Mängija m2) {  // meetod, kus tehakse mängija käik
+    public Mängija käigud(Mängija m1, Mängija m2) throws InterruptedException {  // meetod, kus tehakse mängija käik
         int tikke;
-        if(m1 instanceof MängijaComputer){
-            try {
-                wait(10);
-            } catch (InterruptedException e) {
-                System.out.println("Midagi on siin lappes.");
-            }
+        if(m1 instanceof MängijaComputer && !käik){
+            käiguLõpp.setVisible(false);
             tikke = m1.käik(tikkude_arv);
             tikkude_arv -= tikke;
-            tikkudeNäitja.getChildren().subList(0, tikke).clear();
+            for (int i = 0; i < tikke; i++) {
+                tikkudeNäitja.getChildren().remove(0);
+                Thread.sleep(100);
+            }
             allesTikkelbl.setText("TIKKE ON ALLES " + tikkude_arv);
+            mängija.setText(m2.getNimi() + " KORD");
+            käik = true;
         }else{
-            System.out.println(tikkude_arv);
+            käiguLõpp.setVisible(true);
             int tikkeKäiguAlguses=tikkude_arv;
             tikkudeNäitja.setOnMouseClicked((MouseEvent e) -> {
                 tikkude_arv--;
                 tikkudeNäitja.getChildren().remove(0);
                 allesTikkelbl.setText("TIKKE ON ALLES " + tikkude_arv);
             });
-            /**while(tikkeKäiguAlguses-tikkude_arv<=3){
-            } see jääb kas siia kinni*/
-            tikkudeNäitja.removeEventHandler(MouseEvent.MOUSE_CLICKED, tikkudeNäitja.getOnMouseClicked());
+            käiguLõpp.setOnMouseClicked((MouseEvent e) -> {
+                käik = false;
+                tikkudeNäitja.removeEventHandler(MouseEvent.MOUSE_CLICKED, tikkudeNäitja.getOnMouseClicked());
+            });
+            //paus
+            //kasutaja ei tohiks võtta üle 3 tiku
+            mängija.setText(m2.getNimi() + " KORD");
         }
         if (tikkude_arv == 0) {
-            System.out.println("läbi");
             return m2;
         }//tagastab võitja
-        mängija.setText(m2.getNimi() + " KORD");
-        return käigud(m2, m1);
+        else{
+            return käigud(m2, m1);
+        }
     }
 
     //pildid tikkudest
@@ -200,15 +203,18 @@ public class MainMenu extends Application {
                 allesTikkelbl.setText("TIKKE ON ALLES: " + tikkude_arv);//näitab tikkude arvu
                 mängija.setText(Player.getNimi() + " KORD");//näitab kumma kord on
                 tikud(tikkude_arv);
-                System.out.println(Player.getNimi());
-                mängGroup.getChildren().addAll(allesTikkelbl, mängija, tikkudeNäitja);
+                käiguLõpp = new Button("Lõpeta käik");
+                mängGroup.getChildren().addAll(allesTikkelbl, mängija, tikkudeNäitja, käiguLõpp);
                 mängGroup.getChildren().removeAll(alustab);
-                if(Player == mangija1){
-                    Player = käigud(mangija1, mangija2);
-                }else{
-                    Player = käigud(mangija2,mangija1);
-                }
-                System.out.println(Player.getNimi());
+                try {
+                    if (Player == mangija1) {
+                        Player = käigud(mangija1, mangija2);
+                    } else {
+                        Player = käigud(mangija2, mangija1);
+                    }
+                }catch (Exception ignored){}
+                mängGroup.getChildren().removeAll(allesTikkelbl, mängija, tikkudeNäitja, käiguLõpp);
+                mängGroup.getChildren().addAll(bttnBack, bttnLõpeta);
             });
 
             //label, näitab, kelle kord on
@@ -278,7 +284,6 @@ public class MainMenu extends Application {
             bttnAlustaRaske.setLayoutY(140);
             bttnAlustaRaske.setBorder(Border.EMPTY);//et hyperlingil poleks piiri
             bttnAlustaRaske.setOnAction((ActionEvent e) -> {
-                tarkarvuti = true;
                 mangija2 = new MängijaComputerHard();
                 Player = algus();
                 primaryStage.setScene(mäng);
@@ -291,7 +296,6 @@ public class MainMenu extends Application {
             bttnAlustaKerge.setLayoutY(140);
             bttnAlustaKerge.setBorder(Border.EMPTY);//et hyperlingil poleks piiri
             bttnAlustaKerge.setOnAction((ActionEvent e)->{
-                tarkarvuti = false;
                 mangija2 = new MängijaComputerHard();
                 Player = algus();
                 primaryStage.setScene(mäng);
@@ -319,8 +323,6 @@ public class MainMenu extends Application {
             bttnEdasi.setOnAction((ActionEvent e)->{
                 if(inimene) {
                     mangija2 = new Mängija(nimiTeineTF.getText());
-                    System.out.println(nimiTF.getText());
-                    System.out.println(nimiTeineTF.getText());
                     Player = algus();
                     primaryStage.setScene(mäng);
                 }else {
