@@ -1,175 +1,227 @@
 package oop;
 
+import javafx.animation.FadeTransition;
 import javafx.application.Application;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
-import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
-import java.util.concurrent.atomic.AtomicReference;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 
 public class MainMenu extends Application {
     //menu stseeni nupud
-    VBox menuVbox;
-
-    VBox gameLabels;
-    HBox käiguNäitaja;
-    HBox tikkudeNäitja;
+    HBox tikkudeNäitja = new HBox();
     HBox tikkudeValik;
 
-    ComboBox tikkudeArvComboBox;
-
-    Label label;
+    Label sissejuhatus;
+    Label nimiLabel;
+    Label valik;
     Label alustab;
     Label mängija;
     Label allesTikkelbl;
-    Label allesTikke;
     Label võitja;
     Label tikkudeError;
+
 
     TextField nimiTF;
     TextField nimiTeineTF;
 
-    Button bttnAlusta;
-    Button bttnLõpeta;
-    Button bttnAlustaRaske;
-    Button bttnAlustaTeiseVastu;
-    Button bttnValiTikud;
+    Hyperlink bttnAlusta;
+    Hyperlink bttnLõpeta;
+    Hyperlink bttnAlustaRaske;
+    Hyperlink bttnAlustaTeiseVastu;
+    Hyperlink bttnAlustaKerge;
+    Hyperlink bttnEdasi;
 
     Mängija mangija1;
     Mängija mangija2;
-    Mängija current_player;
+    Mängija Player;
 
     // nupp, mis viib tagasi menüü screenile
     Button bttnBack;
+    Button käiguLõpp;
 
-    int tikkude_arv;
-    int valitudTikud;
+    int tikkude_arv = 0;
 
-    public void setTikkude_arv(int uusArv){
-        tikkude_arv = uusArv;
+    boolean inimene;
+    boolean tarkarvuti;
 
-    }
+    Font font = new Font("Bauhaus 93", 15);
 
-    public void algus(){
-
-        tikkude_arv = 5 + (int) (Math.random() * 20);
-        allesTikke.setText(String.valueOf(tikkude_arv));
+    public Mängija algus(){
+        tikkude_arv = 5 + (int) (Math.random() * 20);// tikkude arv, genereeritakse suvaliselt vahemikust 5-25
         System.out.println(tikkude_arv);
 
         int a = (int) (Math.random() * 1000);//suvaline arv, et vaadata kumb alustab
         if (a % 2 == 0) {
-
-            mängija.setText(mangija1.getNimi());//GUI osa, mis väljastab, et esimene mängija alustab
-            current_player = mangija1;
+            alustab.setText("Tikkude arv on " + tikkude_arv + "\n\n Alustab " + mangija1.getNimi());
+            return mangija1;//kui paariarv, siis alustab mängija 1
         } else {
-
-            mängija.setText(mangija2.getNimi());//GUI osa, mis väljastab, et teine mängija alustab
-            current_player = mangija2;
-            tikkude_arv = käigud(tikkude_arv, mangija2, mangija1);
+            alustab.setText("Tikkude arv on " + tikkude_arv + "\n\n Alustab " + mangija2.getNimi());
+            return mangija2;// kui paaritu, siis alustab mängija 2
         }
     }
 
-    public int game() throws InterruptedException {
-        // esimese mängija käik
-        if (current_player == mangija1){
-            mängija.setText(mangija1.getNimi());
-            wait(10);
-        }
-
-        // teise mängija käik
-        // kui on mängijaks computer
-        if (mangija2 instanceof MängijaComputer && current_player == mangija2) {
-            mängija.setText(mangija2.getNimi());
-            wait(10);
-            if (tikkude_arv > 0) tikkude_arv = käigud(tikkude_arv, mangija2, mangija1);
-            current_player = mangija1;
-        }
-        // kui mängijaks on player
-        else if (current_player == mangija2){
-            mängija.setText(mangija2.getNimi());
-            wait(10);
-            if (tikkude_arv > 0){
-                tikkude_arv = käigud(tikkude_arv, mangija2, mangija1);
-                current_player = mangija1;
+    public Mängija käigud(Mängija m1, Mängija m2) {  // meetod, kus tehakse mängija käik
+        int tikke;
+        if(m1 instanceof MängijaComputer){
+            try {
+                wait(10);
+            } catch (InterruptedException e) {
+                System.out.println("Midagi on siin lappes.");
             }
+            tikke = m1.käik(tikkude_arv);
+            tikkude_arv -= tikke;
+            tikkudeNäitja.getChildren().subList(0, tikke).clear();
+            allesTikkelbl.setText("TIKKE ON ALLES " + tikkude_arv);
+        }else{
+            System.out.println(tikkude_arv);
+            int tikkeKäiguAlguses=tikkude_arv;
+            tikkudeNäitja.setOnMouseClicked((MouseEvent e) -> {
+                tikkude_arv--;
+                tikkudeNäitja.getChildren().remove(0);
+                allesTikkelbl.setText("TIKKE ON ALLES " + tikkude_arv);
+            });
+            /**while(tikkeKäiguAlguses-tikkude_arv<=3){
+            } see jääb kas siia kinni*/
+            tikkudeNäitja.removeEventHandler(MouseEvent.MOUSE_CLICKED, tikkudeNäitja.getOnMouseClicked());
         }
-    return tikkude_arv;
-    }//käigud, kuni kumbki võidab
-
-
-    public int käigud(int tikkude_arv, Mängija m1, Mängija m2) {  // meetod, kus tehakse mängija käik
-        tikkude_arv -= m1.käik(tikkude_arv); // kutsub välja vastava Mängija klassis oleva funktsiooni käik ning lahutab vastava tikkude arvu kogu tikkude hulgast.
-        allesTikke.setText(String.valueOf(tikkude_arv)); // GUI osa, kus väljastatakse kasutajale, palju on tikke alles
-
         if (tikkude_arv == 0) {
-            tikkudeArvComboBox.setDisable(true);
-            bttnValiTikud.setDisable(true);
-            allesTikke.setText("");
-            allesTikkelbl.setText("Võitja: ");
-            võitja.setText(m2.getNimi()); // GUI osa, kus näidatakse, et m2 võitis
-        }//väljastab võitja
-        return tikkude_arv;
+            System.out.println("läbi");
+            return m2;
+        }//tagastab võitja
+        mängija.setText(m2.getNimi() + " KORD");
+        return käigud(m2, m1);
     }
 
-    public static void main(String[] args) {
-        launch(args);
+    //pildid tikkudest
+    public void tikud(int tikkudeArv){
+        Image tikk = null;
+        try {
+            tikk = new Image(new FileInputStream("tikk.jpg"));
+        } catch (FileNotFoundException e) {
+            System.out.println("Faili ei leitud");
+        }
+        for (int j = 0; j < tikkudeArv; j++) {
+            ImageView iwTikk = new ImageView(tikk);
+            iwTikk.setFitHeight(300);
+            iwTikk.setFitWidth(30);
+            iwTikk.setPreserveRatio(true);
+            tikkudeNäitja.getChildren().add(iwTikk);
+        }
     }
 
     @Override
-    public void start(Stage primaryStage) throws InterruptedException {
+    public void start(Stage primaryStage) throws FileNotFoundException {
+        Group firstPageGroup = new Group();
         Group menuGroup = new Group();
         Group mängGroup = new Group();
 
-        Scene menu = new Scene(menuGroup, 170, 230, Color.SNOW);
-        Scene mäng = new Scene(mängGroup, 300, 300, Color.WHITE);
+        Scene firstPage = new Scene(firstPageGroup, 500, 450);
+        Scene menu = new Scene(menuGroup, 500, 450);
+        Scene mäng = new Scene(mängGroup, 500, 450);
 
+        /** Images */
+        {   //stseen 1 - esileht - pilt
+            Image i = new Image(new FileInputStream("11230723.jpg"));
+            ImageView iw = new ImageView(i);
+            iw.setX(0);
+            iw.setY(0);
+            iw.setFitHeight(455);
+            iw.setFitWidth(500);
+            iw.setPreserveRatio(true);
+            firstPageGroup.getChildren().add(iw);
 
-        /** Vbox/HBox **/
-        {
-            menuVbox = new VBox();
-            menuVbox.setSpacing(6);
-            menuVbox.setLayoutX(10);
+            //stseen 2 - menu - pilt
+            Image i2v = new Image(new FileInputStream("polev.jpg"));
+            ImageView iw2v = new ImageView(i2v);
+            iw2v.setX(30);
+            iw2v.setY(30);
+            iw2v.setFitHeight(380);
+            iw2v.setFitWidth(250);
+            iw2v.setPreserveRatio(true);
+            menuGroup.getChildren().add(iw2v);
+            Image i2p = new Image(new FileInputStream("polev2.jpg"));
+            ImageView iw2p = new ImageView(i2p);
+            iw2p.setX(280);
+            iw2p.setY(30);
+            iw2p.setFitHeight(380);
+            iw2p.setFitWidth(250);
+            iw2p.setPreserveRatio(true);
+            menuGroup.getChildren().add(iw2p);
 
-            käiguNäitaja = new HBox();
-
-            gameLabels = new VBox();
-            gameLabels.setSpacing(6);
-            gameLabels.setLayoutX(10);
-
-            tikkudeNäitja = new HBox();
-            tikkudeNäitja.setSpacing(6);
-
-            tikkudeValik = new HBox();
         }
-        /** Labels **/
-        {
-            label = new Label("Tikumäng");
-            label.setFont(Font.font("Arial", 30));
+        /** Vbox/HBox**/
+        {   tikkudeNäitja = new HBox();
+            tikkudeNäitja.setLayoutX(100);
+            tikkudeNäitja.setLayoutY(100);
+        }
+        /**Labels **/
+        {   //sissejuhatav teks avalehel
+            sissejuhatus = new Label("Tikumäng -\n sissejuhatav tekst, mida peaks \nenne mängimist teadma, nt, et mängija saab \n võtta 1,2 või 3 tikku.");
+            sissejuhatus.setFont(font);
+            sissejuhatus.setLayoutX(130);
+            sissejuhatus.setLayoutY(30);
 
-            alustab = new Label("Praegu käib: ");
-            alustab.setFont(Font.font("Arial", 24));
+            //silt, valikute steenil
+            valik = new Label("Vali kummaga soovid mängida: ");
+            valik.setFont(font);
+            valik.setLayoutX(140);
+            valik.setLayoutY(40);
 
-            mängija = new Label("");
-            mängija.setFont(Font.font("Arial", 24));
+            //silt, küsib nime
+            nimiLabel = new Label("Mängija nimi:");
+            nimiLabel.setFont(font);
+            nimiLabel.setLayoutY(60);
+            nimiLabel.setLayoutX(180);
 
-            allesTikkelbl = new Label("Tikke on alles: ");
-            allesTikkelbl.setFont(Font.font("Arial", 18));
+            //näitab tikkude arv ja alustavat mängijat enne mängu algust
+            alustab = new Label();
+            alustab.setFont(font);
+            alustab.setLayoutY(100);
+            alustab.setLayoutX(180);
+            alustab.setOnMouseEntered((MouseEvent e) -> { //edasise peaks kuskile mujale tõstma
+                FadeTransition fade = new FadeTransition(Duration.seconds(2));
+                fade.setNode(alustab);
+                fade.setFromValue(1.0);
+                fade.setToValue(0.0);
+                fade.setAutoReverse(false);
+                fade.play();
+                allesTikkelbl.setText("TIKKE ON ALLES: " + tikkude_arv);//näitab tikkude arvu
+                mängija.setText(Player.getNimi() + " KORD");//näitab kumma kord on
+                tikud(tikkude_arv);
+                System.out.println(Player.getNimi());
+                mängGroup.getChildren().addAll(allesTikkelbl, mängija, tikkudeNäitja);
+                mängGroup.getChildren().removeAll(alustab);
+                if(Player == mangija1){
+                    Player = käigud(mangija1, mangija2);
+                }else{
+                    Player = käigud(mangija2,mangija1);
+                }
+                System.out.println(Player.getNimi());
+            });
 
-            allesTikke = new Label("");
-            allesTikke.setFont(Font.font("Arial", 18));
+            //label, näitab, kelle kord on
+            mängija = new Label();
+            mängija.setFont(font);
+            mängija.setLayoutY(50);
+            mängija.setLayoutX(180);
+
+            //alles tikkude näitamise label
+            allesTikkelbl = new Label();
+            allesTikkelbl.setFont(font);
+            allesTikkelbl.setLayoutY(30);
+            allesTikkelbl.setLayoutX(180);
 
             võitja = new Label("");
             võitja.setFont(Font.font("Arial", 18));
@@ -180,102 +232,132 @@ public class MainMenu extends Application {
             tikkudeError.setTextFill(Color.RED);
         }
         /** Text fields / combo box **/
-        {
-            nimiTF = new TextField("Esimese mängija nimi");
-            nimiTF.setLayoutX(10);
-            nimiTF.setPrefWidth(150);
+        {   //esimese mängija nimi
+            nimiTF = new TextField("");
+            nimiTF.setFont(font);
+            nimiTF.setLayoutX(160);
+            nimiTF.setLayoutY(90);
+            nimiTF.setBackground(Background.EMPTY);
 
-            nimiTeineTF = new TextField("Teise mängija nimi");
-            nimiTeineTF.setLayoutX(10);
-            nimiTeineTF.setPrefWidth(150);
-
-            ObservableList<String> options =
-                    FXCollections.observableArrayList(
-                            "1 tikk",
-                            "2 tikku",
-                            "3 tikku"
-                    );
-            tikkudeArvComboBox = new ComboBox(options);
-            tikkudeArvComboBox.setOnAction((Event e) ->{
-                String valik = tikkudeArvComboBox.getValue()+"";
-                if (valik.equals("1 tikk")) valitudTikud = 1;
-                if (valik.equals("2 tikku")) valitudTikud = 2;
-                if (valik.equals("3 tikku")) valitudTikud = 3;
-            });
+            //teise mängija nimi
+            nimiTeineTF = new TextField("");
+            nimiTeineTF.setFont(font);
+            nimiTeineTF.setLayoutX(160);
+            nimiTeineTF.setLayoutY(90);
+            nimiTeineTF.setBackground(Background.EMPTY);
         }
         /** Buttons **/
-        {
-            //Alusta lihtsa arvuti vastu
-            bttnAlusta = new Button("Alusta lihtsa arvuti vastu");
-            bttnAlusta.setPrefWidth(150);
+        {   //AVALEHT
+            //nupp avalehel
+            Hyperlink nupp1 = new Hyperlink("Mängi!"); // luuakse nupp
+            nupp1.setFont(new Font("Bauhaus 93", 30));//lambi font, võiks ära muuta
+            nupp1.setLayoutX(320); // nupu paigutamine x-koordinaadi mõttes
+            nupp1.setLayoutY(150); // nupu paigutamine y-koordinaadi mõttes
+            nupp1.setRotate(-33);//nupu kalle
+            nupp1.setBorder(Border.EMPTY);//et hyperlingil poleks piiri
+            firstPageGroup.getChildren().add(nupp1); // nupp lisatakse juure alluvaks
+            nupp1.setOnMouseClicked(e -> primaryStage.setScene(menu));
+
+            //MENU LEHT
+            //Alusta arvuti vastu
+            bttnAlusta = new Hyperlink("ARVUTI");
+            bttnAlusta.setFont(font);
+            bttnAlusta.setLayoutX(90);
+            bttnAlusta.setLayoutY(140);
+            bttnAlusta.setBorder(Border.EMPTY);//et hyperlingil poleks piiri
             bttnAlusta.setOnAction((ActionEvent e) -> {
-                System.out.println("Tikumäng peaks tööle minema");
-                mangija1 = new Mängija(nimiTF.getText());
-                mangija2 = new MängijaComputer();
-                primaryStage.setScene(mäng);
-                algus(); // otsustatakse, kes alustab
+                inimene = false;
+                menuGroup.getChildren().removeAll(bttnAlusta, bttnAlustaTeiseVastu);
+                menuGroup.getChildren().addAll(bttnAlustaRaske, bttnAlustaKerge);
             });
 
             //Alusta raske arvuti vastu
-            bttnAlustaRaske = new Button("Alusta raske arvuti vastu");
-            bttnAlustaRaske.setPrefWidth(150);
+            bttnAlustaRaske = new Hyperlink("RASKE");
+            bttnAlustaRaske.setFont(font);
+            bttnAlustaRaske.setLayoutX(90);
+            bttnAlustaRaske.setLayoutY(140);
+            bttnAlustaRaske.setBorder(Border.EMPTY);//et hyperlingil poleks piiri
             bttnAlustaRaske.setOnAction((ActionEvent e) -> {
-                primaryStage.setScene(mäng);
-                mangija1 = new Mängija(nimiTF.getText());
+                tarkarvuti = true;
                 mangija2 = new MängijaComputerHard();
+                Player = algus();
+                primaryStage.setScene(mäng);
+            });
 
+            //Mängitakse kergema arvuti vastu
+            bttnAlustaKerge = new Hyperlink("KERGE");
+            bttnAlustaKerge.setFont(font);
+            bttnAlustaKerge.setLayoutX(320);
+            bttnAlustaKerge.setLayoutY(140);
+            bttnAlustaKerge.setBorder(Border.EMPTY);//et hyperlingil poleks piiri
+            bttnAlustaKerge.setOnAction((ActionEvent e)->{
+                tarkarvuti = false;
+                mangija2 = new MängijaComputerHard();
+                Player = algus();
+                primaryStage.setScene(mäng);
             });
 
             //Alusta kaksikmängu
-            bttnAlustaTeiseVastu = new Button("Alusta teise mängija vastu");
-            bttnAlustaTeiseVastu.setPrefWidth(150);
+            bttnAlustaTeiseVastu = new Hyperlink("INIMENE");
+            bttnAlustaTeiseVastu.setFont(font);
+            bttnAlustaTeiseVastu.setLayoutX(320);
+            bttnAlustaTeiseVastu.setLayoutY(140);
+            bttnAlustaTeiseVastu.setBorder(Border.EMPTY);//et hyperlingil poleks piiri
             bttnAlustaTeiseVastu.setOnAction((ActionEvent e)->{
-                primaryStage.setScene(mäng);
-                mangija1 = new Mängija(nimiTF.getText());
-                mangija2 = new Mängija(nimiTeineTF.getText());
-
+                inimene = true;
+                menuGroup.getChildren().removeAll(bttnAlusta, bttnAlustaTeiseVastu, valik);
+                nimiLabel.setText("2. mängija nimi:");
+                menuGroup.getChildren().addAll(nimiTeineTF, nimiLabel, bttnEdasi);
             });
 
+            //nimede küsimisel edasi liikumiseks
+            bttnEdasi = new Hyperlink("EDASI");
+            bttnEdasi.setFont(font);
+            bttnEdasi.setLayoutX(180);
+            bttnEdasi.setLayoutY(140);
+            bttnEdasi.setBorder(Border.EMPTY);//et hyperlingil poleks piiri
+            bttnEdasi.setOnAction((ActionEvent e)->{
+                if(inimene) {
+                    mangija2 = new Mängija(nimiTeineTF.getText());
+                    System.out.println(nimiTF.getText());
+                    System.out.println(nimiTeineTF.getText());
+                    Player = algus();
+                    primaryStage.setScene(mäng);
+                }else {
+                    mangija1 = new Mängija(nimiTF.getText());
+                    menuGroup.getChildren().removeAll(nimiTF, nimiLabel, bttnEdasi);
+                    menuGroup.getChildren().addAll(valik, bttnAlusta, bttnAlustaTeiseVastu);
+                }
+            });
+
+            //MÄNGU LEHT
             bttnBack = new Button("Back");
             bttnBack.setLayoutY(265);
             bttnBack.setLayoutX(10);
             bttnBack.setPrefWidth(50);
-            bttnBack.setOnAction((ActionEvent e) -> {
-                primaryStage.setScene(menu);
-            });
+            bttnBack.setOnAction((ActionEvent e) -> primaryStage.setScene(firstPage));
 
-            bttnLõpeta = new Button("Lõpeta");
+            bttnLõpeta = new Hyperlink("Lõpeta");
             bttnLõpeta.setPrefWidth(150);
             bttnLõpeta.setOnAction((ActionEvent e) -> {
                 System.out.println("Exiting");
                 System.exit(0);
             });
-
-            bttnValiTikud = new Button("vali");
-            bttnValiTikud.prefWidth(50);
-            bttnValiTikud.setOnAction(new EventHandler<ActionEvent>() {
-                //valitudTikud = tikkudeArvComboBox.getValue()+"";
-                @Override
-                public void handle(ActionEvent event) {
-                    System.out.println("Valik"+valitudTikud);
-                    setTikkude_arv(käigud(tikkude_arv, mangija1, mangija2));
-                }
-            });
         }
 
-        //game stuff
-        käiguNäitaja.getChildren().addAll(alustab, mängija);
-        tikkudeNäitja.getChildren().addAll(allesTikkelbl, allesTikke, võitja);
-        tikkudeValik.getChildren().addAll(tikkudeArvComboBox, bttnValiTikud, tikkudeError);
-        gameLabels.getChildren().addAll(käiguNäitaja, tikkudeNäitja, tikkudeValik);
-        mängGroup.getChildren().addAll(gameLabels, bttnBack);
-
-        //menu stuff
-        menuVbox.getChildren().addAll(label, nimiTF, bttnAlusta, bttnAlustaRaske, nimiTeineTF, bttnAlustaTeiseVastu, bttnLõpeta);
-        menuGroup.getChildren().addAll(menuVbox);
+        //first buttons/labels/etc for every stage
+        firstPageGroup.getChildren().add(sissejuhatus);
+        menuGroup.getChildren().addAll(nimiLabel, nimiTF, bttnEdasi);
+        mängGroup.getChildren().add(alustab);
 
         primaryStage.setTitle("Tikumäng");
-        primaryStage.setScene(menu);
+        primaryStage.setScene(firstPage);
+        primaryStage.setResizable(false);
         primaryStage.show();
+    }
+
+    //main
+    public static void main(String[] args) {
+        launch(args);
     }
 }
