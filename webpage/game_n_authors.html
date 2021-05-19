@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Tikumang!</title>
+        
+        <style>
+            .center{
+                margin: auto;
+                width: 75%;
+                padding: 10px;
+                background-color: rgba(0, 0, 0, 0.295);
+                height: 95%;
+            }
+            html{
+                height: 100%;
+                background: #d4d4d4; /* total fallback */
+                background-image: url("1331102578.png"); /* fallback */
+                background-image: url("1331102578.png"), linear-gradient(rgb(245, 198, 111), red);
+                
+                background-size: cover;
+            }
+            body {
+                
+                text-align: center;
+                color: white;
+            }
+            .list{
+                text-align: left;
+                line-height: 24px;
+            }
+        </style>
+    </head>
+    
+    <body>
+
+        <h1>JAVA 2.GRUPITOO</h1>       
+
+    </body>
+    <DIV class="center">
+        <nav>
+            <ul>
+              <li><a href="Tikumang_WKraam_TSchaffrik.html">Menu</a></li>
+              <li><a href="game_n_authors.html">Programmist ja autoritest</a></li>
+            </ul>
+          </nav>
+        <p></p>
+		<p>Walther Kraam tegi palju alustalasi ja ehitas pool vundamendist.</p>
+		<p>Triin Schaffrik ehitas selle vundamendi peale kasutajale sobiva toote.</p>
+        <p>Programm ise käsitleb lihtsat mängu, kus kasutajal on võimalus enda sõbra, olgu see arvuti või inimene, vastu tikke jägremööda võtta</p>
+        <p>Iga kasutaja, kes on inimene saab endale nime valida vabal valikul, neid andmeid ei saadeta kusagile pilve, niiet tegemist on turvalise mänguga!</p>
+        <H2>Natuke ligemalt programmist</H2>
+        <p>Programm koosneb neljast jaava klassist:</p>
+        <ul class="list">
+            <li>MainMenu.java - see käsitleb kõiki alumisi klasse, ning selles klassis toimub mängu loogiga, ja kui see polnud piisav, siis selle peale on ka ehitatud Gradle GUI</li>
+            <li>Mängija.java - see klass käsitleb kasutaja mängija objekti, mida tekitab MainMenu.java klass. Seda klassi kasutab inimene, kellele on omistatud kindel nimi</li>
+            <li>MängijaComputer.java - see klass käsitleb arvuti objekti, mis enda käiguna lihtsalt võtab suvalise arvu tikke 1-3</li>
+            <li>MängijaComputerHard.java - see klass käsitleb Rasket arvuti mängija objekti, mis tehakse, kui valitakse raske arvuti enda vastu mängima, tikkude valimiseks võtab arvuti alles olevate tikkude arvu, 
+                jagab kolmega, ning võtab nii palju tikke, kui oli jääk. Sellega võtb arvuti kõige optimaalsema arvu tikke.</li>
+        </ul>
+        <p>perfektses maailmas, kus saaks kõik õigel ajal tehtud ja inimesed vigu ei teeks, elaks me juba marsil, kuigi see pole tänapäev. Programmi kirjutamisel jäime pidevalt kinni nuppude kasutusvõimaluste taha, kus mängu loogika sisse pistetud
+            nupp ei taha teha seda, mis talle öeldud on, sest nuppe ei saa panna while loopi, ta lihtsalt ei tööta ja viskab erroreid... ja tänu selle teadmise puudusele, saigi aeg otsa, et programm aja sees lõpuni teha, et see töötaks.
+        </p>
+    </DIV>
+</html>
