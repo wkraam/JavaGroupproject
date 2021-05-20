@@ -76,6 +76,7 @@ public class MainMenu extends Application {
 
     public void käigud(Mängija m1, Mängija m2) throws InterruptedException {  // meetod, kus tehakse mängija käik
         if(tikkude_arv == 0){
+            Player = m2;
             lopp();
         }else {
             int tikke;
