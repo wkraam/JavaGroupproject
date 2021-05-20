@@ -1,6 +1,7 @@
 package oop;
 
 import javafx.animation.FadeTransition;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.scene.Group;
@@ -18,7 +19,10 @@ import javafx.util.Duration;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
-public class MainMenu extends Application{
+
+public class MainMenu extends Application {
+    Group mängGroup;
+
     //menu stseeni nupud
     HBox tikkudeNäitja = new HBox();
 
@@ -36,7 +40,7 @@ public class MainMenu extends Application{
     TextField nimiTeineTF;
 
     Hyperlink bttnAlusta;
-    Hyperlink bttnLõpeta;
+    Button bttnLõpeta;
     Hyperlink bttnAlustaRaske;
     Hyperlink bttnAlustaTeiseVastu;
     Hyperlink bttnAlustaKerge;
@@ -51,13 +55,13 @@ public class MainMenu extends Application{
     Button käiguLõpp;
 
     int tikkude_arv = 0;
+    int tikkeKäiguAlguses = 0;
 
     boolean inimene;
-    boolean käik;
 
     Font font = new Font("Bauhaus 93", 15);
 
-    public Mängija algus(){
+    public Mängija algus() {
         tikkude_arv = 5 + (int) (Math.random() * 20);// tikkude arv, genereeritakse suvaliselt vahemikust 5-25
 
         int a = (int) (Math.random() * 1000);//suvaline arv, et vaadata kumb alustab
@@ -70,45 +74,67 @@ public class MainMenu extends Application{
         }
     }
 
-    public Mängija käigud(Mängija m1, Mängija m2) throws InterruptedException {  // meetod, kus tehakse mängija käik
-        int tikke;
-        if(m1 instanceof MängijaComputer && !käik){
-            käiguLõpp.setVisible(false);
-            tikke = m1.käik(tikkude_arv);
-            tikkude_arv -= tikke;
-            for (int i = 0; i < tikke; i++) {
-                tikkudeNäitja.getChildren().remove(0);
-                Thread.sleep(100);
+    public void käigud(Mängija m1, Mängija m2) throws InterruptedException {  // meetod, kus tehakse mängija käik
+        if(tikkude_arv == 0){
+            lopp();
+        }else {
+            int tikke;
+            if (m1 instanceof MängijaComputer) {//kui arvuti, siis
+                käiguLõpp.setVisible(false);
+                tikke = m1.käik(tikkude_arv);
+                System.out.println("Arvuti tikke " + tikke);
+                tikkude_arv -= tikke;
+                for (int i = 0; i < tikke; i++) {
+                    allesTikkelbl.setText("TIKKE ON ALLES " + tikkude_arv);
+                    tikkudeNäitja.getChildren().remove(0);
+                    Thread.sleep(100);
+                }
+                mängija.setText(m2.getNimi() + " KORD");
+                try {
+                    käigud(m2, m1);
+                } catch (InterruptedException ignored) {
+                }
+                tikkeKäiguAlguses = 0;
+            } else {//Kasutaja
+                käiguLõpp.setVisible(true);
+                tikkudeNäitja.setOnMouseClicked((MouseEvent e) -> {
+                    tikkude_arv--;
+                    tikkeKäiguAlguses++;
+                    System.out.println(tikkeKäiguAlguses);
+                    System.out.println("Tikkude arv" + tikkude_arv);
+                    tikkudeNäitja.getChildren().remove(0);
+                    allesTikkelbl.setText("TIKKE ON ALLES " + tikkude_arv);
+                    if (tikkeKäiguAlguses == 3) {
+                        tikkeKäiguAlguses = 0;
+                        mängija.setText(m2.getNimi() + " KORD");
+                        tikkudeNäitja.removeEventHandler(MouseEvent.MOUSE_CLICKED, tikkudeNäitja.getOnMouseClicked());
+                        try {
+                            käigud(m2, m1);
+                        } catch (InterruptedException ignored) {
+                        }
+                    }
+                });
+                käiguLõpp.setOnMouseClicked((MouseEvent e) -> {
+                    tikkeKäiguAlguses = 0;
+                    mängija.setText(m2.getNimi() + " KORD");
+                    tikkudeNäitja.removeEventHandler(MouseEvent.MOUSE_CLICKED, tikkudeNäitja.getOnMouseClicked());
+                    try {
+                        käigud(m2, m1);
+                    } catch (InterruptedException ignored) {
+                    }
+                });
             }
-            allesTikkelbl.setText("TIKKE ON ALLES " + tikkude_arv);
-            mängija.setText(m2.getNimi() + " KORD");
-            käik = true;
-        }else{
-            käiguLõpp.setVisible(true);
-            int tikkeKäiguAlguses=tikkude_arv;
-            tikkudeNäitja.setOnMouseClicked((MouseEvent e) -> {
-                tikkude_arv--;
-                tikkudeNäitja.getChildren().remove(0);
-                allesTikkelbl.setText("TIKKE ON ALLES " + tikkude_arv);
-            });
-            käiguLõpp.setOnMouseClicked((MouseEvent e) -> {
-                käik = false;
-                tikkudeNäitja.removeEventHandler(MouseEvent.MOUSE_CLICKED, tikkudeNäitja.getOnMouseClicked());
-            });
-            //paus
-            //kasutaja ei tohiks võtta üle 3 tiku
-            mängija.setText(m2.getNimi() + " KORD");
-        }
-        if (tikkude_arv == 0) {
-            return m2;
-        }//tagastab võitja
-        else{
-            return käigud(m2, m1);
         }
     }
 
+    public void lopp(){
+        võitja.setText("VÕITJA: " + Player.getNimi());
+        mängGroup.getChildren().removeAll(allesTikkelbl, mängija, tikkudeNäitja, käiguLõpp);
+        mängGroup.getChildren().addAll(bttnBack, bttnLõpeta, võitja);
+    }
+
     //pildid tikkudest
-    public void tikud(int tikkudeArv){
+    public void tikud(int tikkudeArv) {
         Image tikk = null;
         try {
             tikk = new Image(new FileInputStream("tikk.jpg"));
@@ -118,7 +144,10 @@ public class MainMenu extends Application{
         for (int j = 0; j < tikkudeArv; j++) {
             ImageView iwTikk = new ImageView(tikk);
             iwTikk.setFitHeight(300);
-            iwTikk.setFitWidth(30);
+            int laius;
+            if (tikkudeArv > 10) laius = 500 / tikkudeArv;
+            else laius = 30;
+            iwTikk.setFitWidth(laius);
             iwTikk.setPreserveRatio(true);
             tikkudeNäitja.getChildren().add(iwTikk);
         }
@@ -128,7 +157,7 @@ public class MainMenu extends Application{
     public void start(Stage primaryStage) throws FileNotFoundException {
         Group firstPageGroup = new Group();
         Group menuGroup = new Group();
-        Group mängGroup = new Group();
+        mängGroup = new Group();
 
         Scene firstPage = new Scene(firstPageGroup, 500, 450);
         Scene menu = new Scene(menuGroup, 500, 450);
@@ -153,7 +182,6 @@ public class MainMenu extends Application{
             iw2v.setFitHeight(380);
             iw2v.setFitWidth(250);
             iw2v.setPreserveRatio(true);
-            menuGroup.getChildren().add(iw2v);
             Image i2p = new Image(new FileInputStream("polev2.jpg"));
             ImageView iw2p = new ImageView(i2p);
             iw2p.setX(280);
@@ -161,17 +189,17 @@ public class MainMenu extends Application{
             iw2p.setFitHeight(380);
             iw2p.setFitWidth(250);
             iw2p.setPreserveRatio(true);
-            menuGroup.getChildren().add(iw2p);
-
+            menuGroup.getChildren().addAll(iw2p, iw2v);
         }
-        /** Vbox/HBox**/
-        {   tikkudeNäitja = new HBox();
-            tikkudeNäitja.setLayoutX(100);
+        /** HBox**/
+        {
+            tikkudeNäitja = new HBox();
+            tikkudeNäitja.setLayoutX(20);
             tikkudeNäitja.setLayoutY(100);
         }
         /**Labels **/
         {   //sissejuhatav teks avalehel
-            sissejuhatus = new Label("Tikumäng -\n sissejuhatav tekst, mida peaks \nenne mängimist teadma, nt, et mängija saab \n võtta 1,2 või 3 tikku.");
+            sissejuhatus = new Label("Tikumäng -\nMängu eesmärgiks on valida 1-3 tikku, \nnii et vastasmängijale jääb viimane tikk. \nMängu on võimalik mängida nii arvuti \nkui ka teise mängijaga.");
             sissejuhatus.setFont(font);
             sissejuhatus.setLayoutX(130);
             sissejuhatus.setLayoutY(30);
@@ -194,27 +222,29 @@ public class MainMenu extends Application{
             alustab.setLayoutY(100);
             alustab.setLayoutX(180);
             alustab.setOnMouseEntered((MouseEvent e) -> { //edasise peaks kuskile mujale tõstma
-                FadeTransition fade = new FadeTransition(Duration.seconds(2));
+                /**FadeTransition fade = new FadeTransition(Duration.seconds(2));
                 fade.setNode(alustab);
                 fade.setFromValue(1.0);
                 fade.setToValue(0.0);
                 fade.setAutoReverse(false);
                 fade.play();
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ignored) {
+                }*/
+                mängGroup.getChildren().remove(alustab);
                 allesTikkelbl.setText("TIKKE ON ALLES: " + tikkude_arv);//näitab tikkude arvu
                 mängija.setText(Player.getNimi() + " KORD");//näitab kumma kord on
                 tikud(tikkude_arv);
-                käiguLõpp = new Button("Lõpeta käik");
                 mängGroup.getChildren().addAll(allesTikkelbl, mängija, tikkudeNäitja, käiguLõpp);
-                mängGroup.getChildren().removeAll(alustab);
                 try {
                     if (Player == mangija1) {
-                        Player = käigud(mangija1, mangija2);
+                        käigud(mangija1, mangija2);
                     } else {
-                        Player = käigud(mangija2, mangija1);
+                        käigud(mangija2, mangija1);
                     }
-                }catch (Exception ignored){}
-                mängGroup.getChildren().removeAll(allesTikkelbl, mängija, tikkudeNäitja, käiguLõpp);
-                mängGroup.getChildren().addAll(bttnBack, bttnLõpeta);
+                } catch (Exception ignored) {
+                }
             });
 
             //label, näitab, kelle kord on
@@ -229,12 +259,20 @@ public class MainMenu extends Application{
             allesTikkelbl.setLayoutY(30);
             allesTikkelbl.setLayoutX(180);
 
-            võitja = new Label("");
-            võitja.setFont(Font.font("Arial", 18));
+            võitja = new Label();
+            võitja.setFont(Font.font("Bauhaus 93", 50));
             võitja.setTextFill(Color.GOLD);
+            võitja.setLayoutX(50);
+            võitja.setLayoutY(150);
+            FadeTransition ft = new FadeTransition(Duration.millis(500), võitja);  // luuakse uus haihtumine
+            ft.setFromValue(1.0);  // määratakse algväärtus (1.0 - täiesti selge)
+            ft.setToValue(0.3); // määratakse lõppväärtus (0 - täiesti haihtunud)
+            ft.setCycleCount(Timeline.INDEFINITE); // lõpmatu tsüklite arv
+            ft.setAutoReverse(true); // lõppu jõudeis tagasi, algusest jälle edasi
+            ft.play();
 
-            tikkudeError = new Label("");
-            tikkudeError.setFont(Font.font("Arial", 18));
+            tikkudeError = new Label();
+            tikkudeError.setFont(font);
             tikkudeError.setTextFill(Color.RED);
         }
         /** Text fields / combo box **/
@@ -295,7 +333,7 @@ public class MainMenu extends Application{
             bttnAlustaKerge.setLayoutX(320);
             bttnAlustaKerge.setLayoutY(140);
             bttnAlustaKerge.setBorder(Border.EMPTY);//et hyperlingil poleks piiri
-            bttnAlustaKerge.setOnAction((ActionEvent e)->{
+            bttnAlustaKerge.setOnAction((ActionEvent e) -> {
                 mangija2 = new MängijaComputerHard();
                 Player = algus();
                 primaryStage.setScene(mäng);
@@ -307,7 +345,7 @@ public class MainMenu extends Application{
             bttnAlustaTeiseVastu.setLayoutX(320);
             bttnAlustaTeiseVastu.setLayoutY(140);
             bttnAlustaTeiseVastu.setBorder(Border.EMPTY);//et hyperlingil poleks piiri
-            bttnAlustaTeiseVastu.setOnAction((ActionEvent e)->{
+            bttnAlustaTeiseVastu.setOnAction((ActionEvent e) -> {
                 inimene = true;
                 menuGroup.getChildren().removeAll(bttnAlusta, bttnAlustaTeiseVastu, valik);
                 nimiLabel.setText("2. mängija nimi:");
@@ -320,12 +358,12 @@ public class MainMenu extends Application{
             bttnEdasi.setLayoutX(180);
             bttnEdasi.setLayoutY(140);
             bttnEdasi.setBorder(Border.EMPTY);//et hyperlingil poleks piiri
-            bttnEdasi.setOnAction((ActionEvent e)->{
-                if(inimene) {
+            bttnEdasi.setOnAction((ActionEvent e) -> {
+                if (inimene) {
                     mangija2 = new Mängija(nimiTeineTF.getText());
                     Player = algus();
                     primaryStage.setScene(mäng);
-                }else {
+                } else {
                     mangija1 = new Mängija(nimiTF.getText());
                     menuGroup.getChildren().removeAll(nimiTF, nimiLabel, bttnEdasi);
                     menuGroup.getChildren().addAll(valik, bttnAlusta, bttnAlustaTeiseVastu);
@@ -334,17 +372,30 @@ public class MainMenu extends Application{
 
             //MÄNGU LEHT
             bttnBack = new Button("Back");
-            bttnBack.setLayoutY(265);
-            bttnBack.setLayoutX(10);
-            bttnBack.setPrefWidth(50);
-            bttnBack.setOnAction((ActionEvent e) -> primaryStage.setScene(firstPage));
+            bttnBack.setLayoutY(400);
+            bttnBack.setLayoutX(50);
+            bttnBack.setPrefWidth(150);
+            bttnBack.setBorder(Border.EMPTY);
+            bttnBack.setOnAction((ActionEvent e) -> {
+                menuGroup.getChildren().clear();//remove ainult õiged asjad(kas nimi või raske/kerge)
+                menuGroup.getChildren().addAll(nimiLabel, nimiTF, bttnEdasi);
+                primaryStage.setScene(firstPage);
+            });
 
-            bttnLõpeta = new Hyperlink("Lõpeta");
+            bttnLõpeta = new Button("Lõpeta");
+            bttnLõpeta.setLayoutY(400);
+            bttnLõpeta.setLayoutX(300);
             bttnLõpeta.setPrefWidth(150);
             bttnLõpeta.setOnAction((ActionEvent e) -> {
                 System.out.println("Exiting");
                 System.exit(0);
             });
+
+            käiguLõpp = new Button("Lõpeta käik");
+            käiguLõpp.setFont(font);
+            käiguLõpp.setLayoutX(200);
+            käiguLõpp.setLayoutY(300);
+            käiguLõpp.setBorder(null);
         }
 
         //first buttons/labels/etc for every stage
